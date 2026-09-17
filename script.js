@@ -1,3 +1,4 @@
+```javascript
 "use strict";
 
 /* =========================================================
@@ -14,12 +15,15 @@ const YOUTUBE_API_KEY = "AIzaSyDwK6p9mcWbkS446vAfwOp8X2iefo0rk80";
 const YOUTUBE_SEARCH_API =
     "https://www.googleapis.com/youtube/v3/search";
 
+
 /* =========================================================
    APPLICATION STATE
    ========================================================= */
 
 let youtubePlayer = null;
 let youtubePlayerReady = false;
+let youtubeApiReady = false;
+let domReady = false;
 
 let pendingVideoId = null;
 let pendingPlayRequest = false;
@@ -45,6 +49,7 @@ let selectedSongForPlaylist = null;
 
 let previousVolume = 100;
 
+
 /* =========================================================
    LOCAL STORAGE
    ========================================================= */
@@ -66,6 +71,7 @@ function loadStorage(key, fallback) {
         const parsed = JSON.parse(value);
 
         return parsed ?? fallback;
+
     } catch (error) {
         console.error(
             "RedWave: Could not load local storage:",
@@ -82,6 +88,7 @@ function saveStorage(key, value) {
             key,
             JSON.stringify(value)
         );
+
     } catch (error) {
         console.error(
             "RedWave: Could not save local storage:",
@@ -104,6 +111,7 @@ let playlists = loadStorage(
     STORAGE_KEYS.playlists,
     []
 );
+
 
 /* =========================================================
    DOM ELEMENTS
@@ -172,13 +180,20 @@ let checkSpotifyPlaylistButton;
 let youtubePlayerElement;
 let youtubePlayerWrapper;
 
+
 /* =========================================================
    INITIALIZATION
    ========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    initializeRedWave
+    function () {
+        domReady = true;
+
+        initializeRedWave();
+
+        tryInitializeYouTubePlayer();
+    }
 );
 
 function initializeRedWave() {
@@ -217,24 +232,15 @@ function initializeRedWave() {
     console.log(
         "RedWave initialized successfully."
     );
-
-    /*
-        If the YouTube API is already ready,
-        create the player immediately.
-    */
-    if (
-        typeof YT !== "undefined" &&
-        YT.Player
-    ) {
-        createYouTubePlayer();
-    }
 }
+
 
 /* =========================================================
    CACHE DOM
    ========================================================= */
 
 function cacheDOMElements() {
+
     searchInput =
         document.getElementById("searchInput");
 
@@ -243,6 +249,7 @@ function cacheDOMElements() {
 
     searchWrapper =
         document.querySelector(".search-wrapper");
+
 
     queueButton =
         document.getElementById("queueButton");
@@ -267,6 +274,7 @@ function cacheDOMElements() {
 
     queueList =
         document.getElementById("queueList");
+
 
     playerCover =
         document.getElementById("playerCover");
@@ -307,6 +315,7 @@ function cacheDOMElements() {
     volumeIcon =
         document.getElementById("volumeIcon");
 
+
     musicGrid =
         document.getElementById("musicGrid");
 
@@ -340,11 +349,13 @@ function cacheDOMElements() {
     startListeningButton =
         document.getElementById("startListeningButton");
 
+
     sidebarPlaylists =
         document.getElementById("sidebarPlaylists");
 
     createPlaylistButton =
         document.getElementById("createPlaylistButton");
+
 
     playlistModal =
         document.getElementById("playlistModal");
@@ -361,6 +372,7 @@ function cacheDOMElements() {
     savePlaylistButton =
         document.getElementById("savePlaylistButton");
 
+
     addPlaylistModal =
         document.getElementById("addPlaylistModal");
 
@@ -369,6 +381,7 @@ function cacheDOMElements() {
 
     playlistPicker =
         document.getElementById("playlistPicker");
+
 
     spotifyImportModal =
         document.getElementById("spotifyImportModal");
@@ -391,6 +404,7 @@ function cacheDOMElements() {
     checkSpotifyPlaylistButton =
         document.getElementById("checkSpotifyPlaylist");
 
+
     youtubePlayerElement =
         document.getElementById("youtubePlayer");
 
@@ -400,20 +414,66 @@ function cacheDOMElements() {
         );
 }
 
+
 /* =========================================================
    YOUTUBE IFRAME API
    ========================================================= */
 
 window.onYouTubeIframeAPIReady = function () {
+
+    youtubeApiReady = true;
+
     console.log(
         "RedWave: YouTube IFrame API is ready."
     );
 
-    createYouTubePlayer();
+    tryInitializeYouTubePlayer();
 };
 
+
+function tryInitializeYouTubePlayer() {
+
+    if (!domReady) {
+        console.log(
+            "RedWave: Waiting for DOM..."
+        );
+
+        return;
+    }
+
+    if (
+        typeof YT === "undefined" ||
+        !YT.Player
+    ) {
+        console.log(
+            "RedWave: Waiting for YouTube API..."
+        );
+
+        return;
+    }
+
+    youtubeApiReady = true;
+
+    createYouTubePlayer();
+}
+
+
 function createYouTubePlayer() {
+
+    if (!domReady) {
+        return;
+    }
+
     if (!youtubePlayerElement) {
+
+        youtubePlayerElement =
+            document.getElementById(
+                "youtubePlayer"
+            );
+    }
+
+    if (!youtubePlayerElement) {
+
         console.error(
             "RedWave: #youtubePlayer was not found."
         );
@@ -425,6 +485,7 @@ function createYouTubePlayer() {
         typeof YT === "undefined" ||
         !YT.Player
     ) {
+
         console.warn(
             "RedWave: YouTube API is not ready yet."
         );
@@ -436,7 +497,12 @@ function createYouTubePlayer() {
         return;
     }
 
+    console.log(
+        "RedWave: Creating YouTube player..."
+    );
+
     try {
+
         youtubePlayer =
             new YT.Player(
                 "youtubePlayer",
@@ -451,7 +517,8 @@ function createYouTubePlayer() {
                         rel: 0,
                         modestbranding: 1,
                         enablejsapi: 1,
-                        origin: window.location.origin
+                        origin:
+                            window.location.origin
                     },
 
                     events: {
@@ -469,23 +536,33 @@ function createYouTubePlayer() {
                     }
                 }
             );
+
     } catch (error) {
+
+        youtubePlayer = null;
+
         console.error(
             "RedWave: Failed to create YouTube player:",
             error
         );
+
+        showSearchStatus(
+            "YouTube player could not initialize."
+        );
     }
 }
+
 
 /* =========================================================
    YOUTUBE PLAYER EVENTS
    ========================================================= */
 
 function onYouTubePlayerReady(event) {
+
     youtubePlayerReady = true;
 
     console.log(
-        "RedWave: YouTube player is ready."
+        "RedWave: YouTube player is READY."
     );
 
     const initialVolume =
@@ -496,37 +573,41 @@ function onYouTubePlayerReady(event) {
         );
 
     try {
+
         event.target.setVolume(
             initialVolume
         );
+
+        event.target.unMute();
+
     } catch (error) {
+
         console.warn(
-            "RedWave: Could not set initial volume.",
+            "RedWave: Could not set initial volume:",
             error
         );
     }
 
-    /*
-        If the user clicked a song before the
-        YouTube player finished loading, play it now.
-    */
     if (
         pendingVideoId &&
         pendingPlayRequest
     ) {
+
         const videoId =
             pendingVideoId;
 
         pendingVideoId = null;
         pendingPlayRequest = false;
 
-        loadYouTubeVideo(
+        playYouTubeVideo(
             videoId
         );
     }
 }
 
+
 function onYouTubePlayerStateChange(event) {
+
     if (
         typeof YT === "undefined"
     ) {
@@ -534,13 +615,19 @@ function onYouTubePlayerStateChange(event) {
     }
 
     switch (event.data) {
+
         case YT.PlayerState.PLAYING:
 
             isPlaying = true;
 
             updatePlayButton();
 
+            console.log(
+                "RedWave: YouTube is PLAYING."
+            );
+
             break;
+
 
         case YT.PlayerState.PAUSED:
 
@@ -548,7 +635,12 @@ function onYouTubePlayerStateChange(event) {
 
             updatePlayButton();
 
+            console.log(
+                "RedWave: YouTube is PAUSED."
+            );
+
             break;
+
 
         case YT.PlayerState.ENDED:
 
@@ -556,37 +648,65 @@ function onYouTubePlayerStateChange(event) {
 
             updatePlayButton();
 
+            console.log(
+                "RedWave: YouTube video ended."
+            );
+
             handleSongEnded();
 
             break;
+
 
         case YT.PlayerState.BUFFERING:
 
             updatePlayButton();
 
+            console.log(
+                "RedWave: YouTube is BUFFERING."
+            );
+
             break;
 
+
+        case YT.PlayerState.CUED:
+
+            console.log(
+                "RedWave: YouTube video is CUED."
+            );
+
+            break;
+
+
         default:
+
             break;
     }
 }
 
+
 function onYouTubePlayerError(event) {
+
     console.error(
         "RedWave: YouTube player error code:",
         event.data
     );
 
+    isPlaying = false;
+
+    updatePlayButton();
+
     let message =
         "YouTube could not play this video.";
 
     switch (event.data) {
+
         case 2:
 
             message =
                 "Invalid YouTube video ID.";
 
             break;
+
 
         case 5:
 
@@ -595,12 +715,14 @@ function onYouTubePlayerError(event) {
 
             break;
 
+
         case 100:
 
             message =
                 "This YouTube video is unavailable.";
 
             break;
+
 
         case 101:
         case 150:
@@ -610,27 +732,28 @@ function onYouTubePlayerError(event) {
 
             break;
 
+
         case 153:
 
             message =
-                "YouTube could not identify the embedded player.";
+                "YouTube could not identify the embedded player. Check the GitHub Pages referrer settings.";
 
             break;
+
 
         default:
+
             break;
     }
-
-    isPlaying = false;
-
-    updatePlayButton();
 
     showSearchStatus(
         message
     );
 }
 
+
 function onYouTubeAutoplayBlocked() {
+
     console.warn(
         "RedWave: YouTube autoplay was blocked."
     );
@@ -640,83 +763,67 @@ function onYouTubeAutoplayBlocked() {
     updatePlayButton();
 
     showSearchStatus(
-        "YouTube blocked automatic playback. Press Play to continue."
+        "YouTube blocked automatic playback. Press Play."
     );
 }
+
 
 /* =========================================================
    PLAY YOUTUBE VIDEO
    ========================================================= */
 
 function playYouTubeVideo(videoId) {
+
     if (!videoId) {
         return;
     }
 
     showYouTubePlayer();
 
-    /*
-        If the player is not ready yet,
-        remember the requested video.
-    */
+    pendingVideoId =
+        videoId;
+
+    pendingPlayRequest =
+        true;
+
+    isPlaying = false;
+
+    updatePlayButton();
+
+
     if (
         !youtubePlayerReady ||
         !youtubePlayer
     ) {
-        pendingVideoId =
-            videoId;
-
-        pendingPlayRequest =
-            true;
 
         console.log(
-            "RedWave: Waiting for YouTube player..."
+            "RedWave: Player not ready. Waiting..."
         );
 
+        tryInitializeYouTubePlayer();
+
         return;
     }
 
-    /*
-        The player is already ready.
-        Load the video immediately.
-    */
-    loadYouTubeVideo(
-        videoId
-    );
-}
-
-function loadYouTubeVideo(videoId) {
-    if (
-        !videoId ||
-        !youtubePlayerReady ||
-        !youtubePlayer
-    ) {
-        return;
-    }
 
     try {
+
         console.log(
             "RedWave: Loading YouTube video:",
-            videoId
-        );
-
-        youtubePlayer.loadVideoById(
             videoId
         );
 
         pendingVideoId = null;
         pendingPlayRequest = false;
 
-        /*
-            Do not set isPlaying here.
-            Wait for YouTube's PLAYING event.
-        */
-        isPlaying = false;
+        youtubePlayer.loadVideoById(
+            videoId
+        );
 
-        updatePlayButton();
     } catch (error) {
+
         console.error(
-            "RedWave: Could not load YouTube video:",
+            "RedWave: Could not play YouTube video:",
             error
         );
 
@@ -730,7 +837,9 @@ function loadYouTubeVideo(videoId) {
     }
 }
 
+
 function showYouTubePlayer() {
+
     if (!youtubePlayerWrapper) {
         return;
     }
@@ -740,7 +849,9 @@ function showYouTubePlayer() {
     );
 }
 
+
 function hideYouTubePlayer() {
+
     if (!youtubePlayerWrapper) {
         return;
     }
@@ -750,11 +861,13 @@ function hideYouTubePlayer() {
     );
 }
 
+
 /* =========================================================
    SEARCH
    ========================================================= */
 
 function setupSearch() {
+
     if (!searchInput) {
         return;
     }
@@ -762,6 +875,7 @@ function setupSearch() {
     searchInput.addEventListener(
         "input",
         function () {
+
             const query =
                 searchInput.value.trim();
 
@@ -772,7 +886,9 @@ function setupSearch() {
             );
 
             if (!query) {
+
                 searchResults = [];
+
                 currentResults = [];
 
                 showHomeView();
@@ -788,21 +904,26 @@ function setupSearch() {
             searchTimer =
                 setTimeout(
                     function () {
+
                         searchYouTube(
                             query
                         );
+
                     },
                     350
                 );
         }
     );
 
+
     searchInput.addEventListener(
         "keydown",
         function (event) {
+
             if (
                 event.key === "Enter"
             ) {
+
                 event.preventDefault();
 
                 const query =
@@ -823,10 +944,13 @@ function setupSearch() {
         }
     );
 
+
     if (clearSearchButton) {
+
         clearSearchButton.addEventListener(
             "click",
             function () {
+
                 searchInput.value = "";
 
                 updateSearchClearButton();
@@ -843,7 +967,9 @@ function setupSearch() {
     }
 }
 
+
 async function searchYouTube(query) {
+
     if (!query) {
         return;
     }
@@ -851,8 +977,9 @@ async function searchYouTube(query) {
     if (
         !YOUTUBE_API_KEY ||
         YOUTUBE_API_KEY ===
-        "PASTE_YOUR_YOUTUBE_API_KEY_HERE"
+            "PASTE_YOUR_YOUTUBE_API_KEY_HERE"
     ) {
+
         showSearchStatus(
             "Add your YouTube Data API key at the top of script.js."
         );
@@ -865,78 +992,99 @@ async function searchYouTube(query) {
 
     showSearchView();
 
+
     if (sectionLabel) {
+
         sectionLabel.textContent =
             "SEARCH RESULTS";
     }
 
+
     if (sectionTitle) {
+
         sectionTitle.textContent =
             'Results for "' +
             query +
             '"';
     }
 
+
     if (songCount) {
         songCount.textContent = "";
     }
+
 
     showSearchStatus(
         "Searching YouTube..."
     );
 
+
     if (musicGrid) {
+
         musicGrid.innerHTML =
             '<div class="loading">Finding music</div>';
     }
 
+
     hideAllEmptyStates();
 
+
     try {
+
         const url =
             new URL(
                 YOUTUBE_SEARCH_API
             );
+
 
         url.searchParams.set(
             "part",
             "snippet"
         );
 
+
         url.searchParams.set(
             "q",
             query
         );
+
 
         url.searchParams.set(
             "type",
             "video"
         );
 
+
         url.searchParams.set(
             "videoCategoryId",
             "10"
         );
+
 
         url.searchParams.set(
             "maxResults",
             "24"
         );
 
+
         url.searchParams.set(
             "key",
             YOUTUBE_API_KEY
         );
+
 
         const response =
             await fetch(
                 url.toString()
             );
 
+
         const data =
             await response.json();
 
+
         if (!response.ok) {
+
             console.error(
                 "RedWave: YouTube API error:",
                 data
@@ -951,15 +1099,18 @@ async function searchYouTube(query) {
             );
         }
 
+
         const results =
             Array.isArray(data.items)
                 ? data.items
                 : [];
 
+
         searchResults =
             results
                 .filter(
                     function (item) {
+
                         return (
                             item &&
                             item.id &&
@@ -971,12 +1122,15 @@ async function searchYouTube(query) {
                     normalizeYouTubeResult
                 );
 
+
         currentResults =
             searchResults.slice();
+
 
         if (
             currentResults.length === 0
         ) {
+
             if (musicGrid) {
                 musicGrid.innerHTML = "";
             }
@@ -997,11 +1151,14 @@ async function searchYouTube(query) {
             return;
         }
 
+
         if (songCount) {
+
             songCount.textContent =
                 currentResults.length +
                 " results";
         }
+
 
         showSearchStatus(
             'Showing YouTube results for "' +
@@ -1009,27 +1166,34 @@ async function searchYouTube(query) {
             '"'
         );
 
+
         renderSongs(
             currentResults
         );
+
     } catch (error) {
+
         console.error(
             "RedWave search error:",
             error
         );
 
+
         if (musicGrid) {
             musicGrid.innerHTML = "";
         }
+
 
         if (songCount) {
             songCount.textContent = "";
         }
 
+
         showSearchStatus(
             "Search error: " +
             error.message
         );
+
 
         noResults?.classList.add(
             "hidden"
@@ -1037,13 +1201,16 @@ async function searchYouTube(query) {
     }
 }
 
+
 /* =========================================================
    NORMALIZE YOUTUBE RESULT
    ========================================================= */
 
 function normalizeYouTubeResult(item) {
+
     const videoId =
         item.id.videoId;
+
 
     const title =
         cleanYouTubeText(
@@ -1051,14 +1218,18 @@ function normalizeYouTubeResult(item) {
             "Unknown title"
         );
 
+
     const channelTitle =
         cleanYouTubeText(
             item.snippet?.channelTitle ||
             "YouTube"
         );
 
+
     const thumbnails =
-        item.snippet?.thumbnails || {};
+        item.snippet?.thumbnails ||
+        {};
+
 
     const thumbnail =
         thumbnails.high?.url ||
@@ -1067,6 +1238,7 @@ function normalizeYouTubeResult(item) {
         "https://i.ytimg.com/vi/" +
         videoId +
         "/hqdefault.jpg";
+
 
     return {
         id: videoId,
@@ -1078,7 +1250,9 @@ function normalizeYouTubeResult(item) {
     };
 }
 
+
 function cleanYouTubeText(text) {
+
     const element =
         document.createElement(
             "textarea"
@@ -1090,11 +1264,13 @@ function cleanYouTubeText(text) {
     return element.value;
 }
 
+
 /* =========================================================
    RENDER SONGS
    ========================================================= */
 
 function renderSongs(songs) {
+
     if (!musicGrid) {
         return;
     }
@@ -1103,6 +1279,7 @@ function renderSongs(songs) {
 
     hideAllEmptyStates();
 
+
     if (
         !Array.isArray(songs) ||
         songs.length === 0
@@ -1110,8 +1287,10 @@ function renderSongs(songs) {
         return;
     }
 
+
     songs.forEach(
         function (song, index) {
+
             const card =
                 createSongCard(
                     song,
@@ -1126,11 +1305,13 @@ function renderSongs(songs) {
     );
 }
 
+
 function createSongCard(
     song,
     index,
     songList
 ) {
+
     const card =
         document.createElement(
             "article"
@@ -1139,6 +1320,7 @@ function createSongCard(
     card.className =
         "song-card";
 
+
     const cover =
         document.createElement(
             "div"
@@ -1146,6 +1328,7 @@ function createSongCard(
 
     cover.className =
         "song-cover";
+
 
     const image =
         document.createElement(
@@ -1163,13 +1346,16 @@ function createSongCard(
             ? "eager"
             : "lazy";
 
+
     image.onerror =
         function () {
+
             image.src =
                 "https://i.ytimg.com/vi/" +
                 song.videoId +
                 "/hqdefault.jpg";
         };
+
 
     const playOverlay =
         document.createElement(
@@ -1182,6 +1368,7 @@ function createSongCard(
     playOverlay.textContent =
         "▶";
 
+
     cover.appendChild(
         image
     );
@@ -1189,6 +1376,7 @@ function createSongCard(
     cover.appendChild(
         playOverlay
     );
+
 
     const title =
         document.createElement(
@@ -1201,6 +1389,7 @@ function createSongCard(
     title.textContent =
         song.title;
 
+
     const artist =
         document.createElement(
             "div"
@@ -1212,6 +1401,7 @@ function createSongCard(
     artist.textContent =
         song.artist;
 
+
     const actions =
         document.createElement(
             "div"
@@ -1219,6 +1409,7 @@ function createSongCard(
 
     actions.className =
         "song-actions";
+
 
     const likeButton =
         document.createElement(
@@ -1236,6 +1427,7 @@ function createSongCard(
             ? "♥ Liked"
             : "♥ Like";
 
+
     const playlistButton =
         document.createElement(
             "button"
@@ -1250,6 +1442,7 @@ function createSongCard(
     playlistButton.textContent =
         "+ Playlist";
 
+
     actions.appendChild(
         likeButton
     );
@@ -1257,6 +1450,7 @@ function createSongCard(
     actions.appendChild(
         playlistButton
     );
+
 
     card.appendChild(
         cover
@@ -1274,9 +1468,11 @@ function createSongCard(
         actions
     );
 
+
     cover.addEventListener(
         "click",
         function () {
+
             playSong(
                 song,
                 songList,
@@ -1284,10 +1480,12 @@ function createSongCard(
             );
         }
     );
+
 
     title.addEventListener(
         "click",
         function () {
+
             playSong(
                 song,
                 songList,
@@ -1295,10 +1493,12 @@ function createSongCard(
             );
         }
     );
+
 
     artist.addEventListener(
         "click",
         function () {
+
             playSong(
                 song,
                 songList,
@@ -1307,9 +1507,11 @@ function createSongCard(
         }
     );
 
+
     likeButton.addEventListener(
         "click",
         function (event) {
+
             event.stopPropagation();
 
             toggleFavorite(
@@ -1323,9 +1525,11 @@ function createSongCard(
         }
     );
 
+
     playlistButton.addEventListener(
         "click",
         function (event) {
+
             event.stopPropagation();
 
             openAddToPlaylistModal(
@@ -1334,8 +1538,10 @@ function createSongCard(
         }
     );
 
+
     return card;
 }
+
 
 /* =========================================================
    PLAY SONG
@@ -1346,55 +1552,68 @@ function playSong(
     sourceList,
     index
 ) {
+
     if (!song || !song.videoId) {
         return;
     }
 
+
     currentSong =
         song;
+
 
     queue =
         Array.isArray(sourceList)
             ? sourceList.slice()
             : [song];
 
+
     queueIndex =
         Number.isInteger(index)
             ? index
             : 0;
 
+
     if (
         queueIndex < 0 ||
         queueIndex >= queue.length
     ) {
+
         queueIndex = 0;
     }
+
 
     addToRecent(
         song
     );
 
+
     updatePlayerUI();
 
     updateQueueUI();
+
 
     playYouTubeVideo(
         song.videoId
     );
 }
 
+
 /* =========================================================
    RECENT
    ========================================================= */
 
 function addToRecent(song) {
+
     if (!song) {
         return;
     }
 
+
     recentSongs =
         recentSongs.filter(
             function (item) {
+
                 return (
                     item.videoId !==
                     song.videoId
@@ -1402,9 +1621,11 @@ function addToRecent(song) {
             }
         );
 
+
     recentSongs.unshift(
         song
     );
+
 
     recentSongs =
         recentSongs.slice(
@@ -1412,23 +1633,28 @@ function addToRecent(song) {
             50
         );
 
+
     saveStorage(
         STORAGE_KEYS.recent,
         recentSongs
     );
 }
 
+
 /* =========================================================
    FAVORITES
    ========================================================= */
 
 function isFavorite(song) {
+
     if (!song || !song.videoId) {
         return false;
     }
 
+
     return favorites.some(
         function (item) {
+
             return (
                 item.videoId ===
                 song.videoId
@@ -1437,72 +1663,92 @@ function isFavorite(song) {
     );
 }
 
+
 function toggleFavorite(song) {
+
     if (!song || !song.videoId) {
         return;
     }
 
+
     if (isFavorite(song)) {
+
         favorites =
             favorites.filter(
                 function (item) {
+
                     return (
                         item.videoId !==
                         song.videoId
                     );
                 }
             );
+
     } else {
+
         favorites.unshift(
             song
         );
     }
+
 
     saveStorage(
         STORAGE_KEYS.favorites,
         favorites
     );
 
+
     if (
         currentView ===
         "favorites"
     ) {
+
         renderFavorites();
     }
 }
+
 
 /* =========================================================
    NAVIGATION
    ========================================================= */
 
 function setupNavigation() {
+
     const navButtons =
         document.querySelectorAll(
             ".nav-btn"
         );
 
+
     navButtons.forEach(
         function (button) {
+
             button.addEventListener(
                 "click",
                 function () {
+
                     const view =
                         button.dataset.view;
+
 
                     if (!view) {
                         return;
                     }
 
+
                     setActiveNavButton(
                         button
                     );
 
+
                     switch (view) {
+
                         case "home":
 
                             showHomeView();
 
                             break;
+
 
                         case "search":
 
@@ -1514,11 +1760,13 @@ function setupNavigation() {
 
                             break;
 
+
                         case "library":
 
                             showLibraryView();
 
                             break;
+
 
                         case "favorites":
 
@@ -1526,13 +1774,16 @@ function setupNavigation() {
 
                             break;
 
+
                         case "recent":
 
                             showRecentView();
 
                             break;
 
+
                         default:
+
                             break;
                     }
                 }
@@ -1541,27 +1792,34 @@ function setupNavigation() {
     );
 }
 
+
 function setActiveNavButton(button) {
+
     document
         .querySelectorAll(
             ".nav-btn"
         )
         .forEach(
             function (item) {
+
                 item.classList.remove(
                     "active"
                 );
             }
         );
 
+
     if (button) {
+
         button.classList.add(
             "active"
         );
     }
 }
 
+
 function activateViewButton(view) {
+
     const button =
         document.querySelector(
             '.nav-btn[data-view="' +
@@ -1569,138 +1827,180 @@ function activateViewButton(view) {
             '"]'
         );
 
+
     if (button) {
+
         setActiveNavButton(
             button
         );
     }
 }
 
+
 /* =========================================================
    HOME
    ========================================================= */
 
 function showHomeView() {
+
     currentView =
         "home";
+
 
     activateViewButton(
         "home"
     );
 
+
     if (
         searchInput &&
         searchInput.value
     ) {
+
         searchInput.value = "";
 
         updateSearchClearButton();
     }
 
+
     if (homeHero) {
+
         homeHero.classList.remove(
             "hidden"
         );
     }
 
+
     if (sectionLabel) {
+
         sectionLabel.textContent =
             "REDWAVE";
     }
 
+
     if (sectionTitle) {
+
         sectionTitle.textContent =
             "Start listening";
     }
+
 
     if (songCount) {
         songCount.textContent = "";
     }
 
+
     showSearchStatus("");
+
 
     if (musicGrid) {
         musicGrid.innerHTML = "";
     }
 
+
     hideAllEmptyStates();
 }
+
 
 /* =========================================================
    SEARCH VIEW
    ========================================================= */
 
 function showSearchView() {
+
     currentView =
         "search";
+
 
     activateViewButton(
         "search"
     );
 
+
     if (homeHero) {
+
         homeHero.classList.add(
             "hidden"
         );
     }
 
+
     if (
         currentResults.length > 0
     ) {
+
         renderSongs(
             currentResults
         );
+
     } else if (musicGrid) {
+
         musicGrid.innerHTML = "";
     }
 }
+
 
 /* =========================================================
    LIBRARY
    ========================================================= */
 
 function showLibraryView() {
+
     currentView =
         "library";
+
 
     activateViewButton(
         "library"
     );
 
+
     if (homeHero) {
+
         homeHero.classList.add(
             "hidden"
         );
     }
 
+
     if (sectionLabel) {
+
         sectionLabel.textContent =
             "YOUR LIBRARY";
     }
 
+
     if (sectionTitle) {
+
         sectionTitle.textContent =
             "Your music";
     }
+
 
     showSearchStatus("");
 
     hideAllEmptyStates();
 
+
     const librarySongs =
         mergeLibrarySongs();
+
 
     if (
         librarySongs.length === 0
     ) {
+
         if (musicGrid) {
             musicGrid.innerHTML = "";
         }
 
+
         if (songCount) {
+
             songCount.textContent =
                 "0 songs";
         }
+
 
         emptyFavorites?.classList.remove(
             "hidden"
@@ -1709,33 +2009,42 @@ function showLibraryView() {
         return;
     }
 
+
     if (songCount) {
+
         songCount.textContent =
             librarySongs.length +
             " songs";
     }
+
 
     renderSongs(
         librarySongs
     );
 }
 
+
 function mergeLibrarySongs() {
+
     const combined = [
         ...favorites,
         ...recentSongs
     ];
 
+
     const map =
         new Map();
 
+
     combined.forEach(
         function (song) {
+
             if (
                 song &&
                 song.videoId &&
                 !map.has(song.videoId)
             ) {
+
                 map.set(
                     song.videoId,
                     song
@@ -1744,58 +2053,76 @@ function mergeLibrarySongs() {
         }
     );
 
+
     return Array.from(
         map.values()
     );
 }
+
 
 /* =========================================================
    FAVORITES VIEW
    ========================================================= */
 
 function showFavoritesView() {
+
     currentView =
         "favorites";
+
 
     activateViewButton(
         "favorites"
     );
 
+
     if (homeHero) {
+
         homeHero.classList.add(
             "hidden"
         );
     }
 
+
     renderFavorites();
 }
 
+
 function renderFavorites() {
+
     if (sectionLabel) {
+
         sectionLabel.textContent =
             "YOUR MUSIC";
     }
 
+
     if (sectionTitle) {
+
         sectionTitle.textContent =
             "Liked Songs";
     }
+
 
     showSearchStatus("");
 
     hideAllEmptyStates();
 
+
     if (
         favorites.length === 0
     ) {
+
         if (musicGrid) {
             musicGrid.innerHTML = "";
         }
 
+
         if (songCount) {
+
             songCount.textContent =
                 "0 songs";
         }
+
 
         emptyFavorites?.classList.remove(
             "hidden"
@@ -1804,64 +2131,84 @@ function renderFavorites() {
         return;
     }
 
+
     if (songCount) {
+
         songCount.textContent =
             favorites.length +
             " songs";
     }
+
 
     renderSongs(
         favorites
     );
 }
 
+
 /* =========================================================
    RECENT VIEW
    ========================================================= */
 
 function showRecentView() {
+
     currentView =
         "recent";
+
 
     activateViewButton(
         "recent"
     );
 
+
     if (homeHero) {
+
         homeHero.classList.add(
             "hidden"
         );
     }
 
+
     renderRecent();
 }
 
+
 function renderRecent() {
+
     if (sectionLabel) {
+
         sectionLabel.textContent =
             "YOUR MUSIC";
     }
 
+
     if (sectionTitle) {
+
         sectionTitle.textContent =
             "Recently Played";
     }
+
 
     showSearchStatus("");
 
     hideAllEmptyStates();
 
+
     if (
         recentSongs.length === 0
     ) {
+
         if (musicGrid) {
             musicGrid.innerHTML = "";
         }
 
+
         if (songCount) {
+
             songCount.textContent =
                 "0 songs";
         }
+
 
         emptyRecent?.classList.remove(
             "hidden"
@@ -1870,126 +2217,161 @@ function renderRecent() {
         return;
     }
 
+
     if (songCount) {
+
         songCount.textContent =
             recentSongs.length +
             " songs";
     }
+
 
     renderSongs(
         recentSongs
     );
 }
 
+
 /* =========================================================
    PLAYLIST CONTROLS
    ========================================================= */
 
 function setupPlaylistControls() {
+
     createPlaylistButton?.addEventListener(
         "click",
         openCreatePlaylistModal
     );
+
 
     closePlaylistModalButton?.addEventListener(
         "click",
         closeCreatePlaylistModal
     );
 
+
     cancelPlaylistButton?.addEventListener(
         "click",
         closeCreatePlaylistModal
     );
+
 
     savePlaylistButton?.addEventListener(
         "click",
         createPlaylist
     );
 
+
     playlistNameInput?.addEventListener(
         "keydown",
         function (event) {
+
             if (
                 event.key === "Enter"
             ) {
+
                 event.preventDefault();
 
                 createPlaylist();
             }
 
+
             if (
                 event.key === "Escape"
             ) {
+
                 closeCreatePlaylistModal();
             }
         }
     );
+
 
     closeAddPlaylistModalButton?.addEventListener(
         "click",
         closeAddToPlaylistModal
     );
 
+
     playlistModal?.addEventListener(
         "click",
         function (event) {
+
             if (
                 event.target ===
                 playlistModal
             ) {
+
                 closeCreatePlaylistModal();
             }
         }
     );
 
+
     addPlaylistModal?.addEventListener(
         "click",
         function (event) {
+
             if (
                 event.target ===
                 addPlaylistModal
             ) {
+
                 closeAddToPlaylistModal();
             }
         }
     );
 }
 
+
 function openCreatePlaylistModal() {
+
     if (!playlistModal) {
         return;
     }
+
 
     playlistModal.classList.remove(
         "hidden"
     );
 
+
     if (playlistNameInput) {
+
         playlistNameInput.value = "";
+
 
         setTimeout(
             function () {
+
                 playlistNameInput.focus();
+
             },
             50
         );
     }
 }
 
+
 function closeCreatePlaylistModal() {
+
     playlistModal?.classList.add(
         "hidden"
     );
 }
 
+
 function createPlaylist() {
+
     const name =
         playlistNameInput
             ? playlistNameInput.value.trim()
             : "";
 
+
     if (!name) {
+
         if (playlistNameInput) {
+
             playlistNameInput.focus();
 
             playlistNameInput.placeholder =
@@ -1999,7 +2381,9 @@ function createPlaylist() {
         return;
     }
 
+
     const playlist = {
+
         id:
             "playlist_" +
             Date.now() +
@@ -2018,79 +2402,99 @@ function createPlaylist() {
             Date.now()
     };
 
+
     playlists.push(
         playlist
     );
+
 
     saveStorage(
         STORAGE_KEYS.playlists,
         playlists
     );
 
+
     renderPlaylists();
 
     closeCreatePlaylistModal();
 }
+
 
 /* =========================================================
    RENDER PLAYLISTS
    ========================================================= */
 
 function renderPlaylists() {
+
     if (!sidebarPlaylists) {
         return;
     }
 
+
     sidebarPlaylists.innerHTML = "";
+
 
     playlists.forEach(
         function (playlist) {
+
             const button =
                 document.createElement(
                     "button"
                 );
 
+
             button.className =
                 "nav-btn";
+
 
             button.type =
                 "button";
 
+
             button.dataset.playlistId =
                 playlist.id;
+
 
             const icon =
                 document.createElement(
                     "span"
                 );
 
+
             icon.textContent =
                 "♫";
+
 
             const name =
                 document.createElement(
                     "span"
                 );
 
+
             name.textContent =
                 playlist.name;
+
 
             button.appendChild(
                 icon
             );
 
+
             button.appendChild(
                 name
             );
 
+
             button.addEventListener(
                 "click",
                 function () {
+
                     showPlaylist(
                         playlist.id
                     );
                 }
             );
+
 
             sidebarPlaylists.appendChild(
                 button
@@ -2099,14 +2503,17 @@ function renderPlaylists() {
     );
 }
 
+
 /* =========================================================
    SHOW PLAYLIST
    ========================================================= */
 
 function showPlaylist(playlistId) {
+
     const playlist =
         playlists.find(
             function (item) {
+
                 return (
                     item.id ===
                     playlistId
@@ -2114,13 +2521,16 @@ function showPlaylist(playlistId) {
             }
         );
 
+
     if (!playlist) {
         return;
     }
 
+
     currentView =
         "playlist:" +
         playlistId;
+
 
     document
         .querySelectorAll(
@@ -2128,11 +2538,13 @@ function showPlaylist(playlistId) {
         )
         .forEach(
             function (button) {
+
                 button.classList.remove(
                     "active"
                 );
             }
         );
+
 
     const playlistButton =
         Array.from(
@@ -2141,6 +2553,7 @@ function showPlaylist(playlistId) {
             )
         ).find(
             function (button) {
+
                 return (
                     button.dataset.playlistId ===
                     playlistId
@@ -2148,42 +2561,55 @@ function showPlaylist(playlistId) {
             }
         );
 
+
     playlistButton?.classList.add(
         "active"
     );
 
+
     if (homeHero) {
+
         homeHero.classList.add(
             "hidden"
         );
     }
 
+
     if (sectionLabel) {
+
         sectionLabel.textContent =
             "PLAYLIST";
     }
 
+
     if (sectionTitle) {
+
         sectionTitle.textContent =
             playlist.name;
     }
+
 
     showSearchStatus("");
 
     hideAllEmptyStates();
 
+
     if (
         !Array.isArray(playlist.songs) ||
         playlist.songs.length === 0
     ) {
+
         if (musicGrid) {
             musicGrid.innerHTML = "";
         }
 
+
         if (songCount) {
+
             songCount.textContent =
                 "0 songs";
         }
+
 
         emptyPlaylist?.classList.remove(
             "hidden"
@@ -2192,70 +2618,90 @@ function showPlaylist(playlistId) {
         return;
     }
 
+
     if (songCount) {
+
         songCount.textContent =
             playlist.songs.length +
             " songs";
     }
+
 
     renderSongs(
         playlist.songs
     );
 }
 
+
 /* =========================================================
    ADD SONG TO PLAYLIST
    ========================================================= */
 
 function openAddToPlaylistModal(song) {
+
     if (!song) {
         return;
     }
 
+
     selectedSongForPlaylist =
         song;
 
+
     renderPlaylistPicker();
+
 
     addPlaylistModal?.classList.remove(
         "hidden"
     );
 }
 
+
 function closeAddToPlaylistModal() {
+
     addPlaylistModal?.classList.add(
         "hidden"
     );
+
 
     selectedSongForPlaylist =
         null;
 }
 
+
 function renderPlaylistPicker() {
+
     if (!playlistPicker) {
         return;
     }
 
+
     playlistPicker.innerHTML = "";
+
 
     if (
         playlists.length === 0
     ) {
+
         const message =
             document.createElement(
                 "div"
             );
 
+
         message.className =
             "empty-state";
+
 
         message.style.minHeight =
             "150px";
 
+
         message.innerHTML =
             '<div class="empty-icon">♫</div>' +
-            "<h3>No playlists yet</h3>" +
-            "<p>Create a playlist first.</p>";
+            '<h3>No playlists yet</h3>' +
+            '<p>Create a playlist first.</p>';
+
 
         playlistPicker.appendChild(
             message
@@ -2264,54 +2710,68 @@ function renderPlaylistPicker() {
         return;
     }
 
+
     playlists.forEach(
         function (playlist) {
+
             const button =
                 document.createElement(
                     "button"
                 );
 
+
             button.className =
                 "playlist-option";
 
+
             button.type =
                 "button";
+
 
             const icon =
                 document.createElement(
                     "span"
                 );
 
+
             icon.textContent =
                 "♫";
+
 
             const name =
                 document.createElement(
                     "span"
                 );
 
+
             name.style.marginLeft =
                 "9px";
 
+
             name.textContent =
                 playlist.name;
+
 
             button.appendChild(
                 icon
             );
 
+
             button.appendChild(
                 name
             );
 
+
             button.addEventListener(
                 "click",
                 function () {
+
                     addSongToPlaylist(
                         playlist.id
                     );
                 }
             );
+
 
             playlistPicker.appendChild(
                 button
@@ -2320,14 +2780,18 @@ function renderPlaylistPicker() {
     );
 }
 
+
 function addSongToPlaylist(playlistId) {
+
     if (!selectedSongForPlaylist) {
         return;
     }
 
+
     const playlist =
         playlists.find(
             function (item) {
+
                 return (
                     item.id ===
                     playlistId
@@ -2335,21 +2799,22 @@ function addSongToPlaylist(playlistId) {
             }
         );
 
+
     if (!playlist) {
         return;
     }
 
-    if (
-        !Array.isArray(
-            playlist.songs
-        )
-    ) {
+
+    if (!Array.isArray(playlist.songs)) {
+
         playlist.songs = [];
     }
+
 
     const alreadyExists =
         playlist.songs.some(
             function (song) {
+
                 return (
                     song.videoId ===
                     selectedSongForPlaylist.videoId
@@ -2357,63 +2822,81 @@ function addSongToPlaylist(playlistId) {
             }
         );
 
+
     if (alreadyExists) {
+
         showSearchStatus(
             "That song is already in this playlist."
         );
+
 
         closeAddToPlaylistModal();
 
         return;
     }
 
+
     playlist.songs.push(
         selectedSongForPlaylist
     );
+
 
     saveStorage(
         STORAGE_KEYS.playlists,
         playlists
     );
 
+
     renderPlaylists();
 
     closeAddToPlaylistModal();
+
 
     if (
         currentView ===
         "playlist:" +
         playlistId
     ) {
+
         showPlaylist(
             playlistId
         );
     }
 }
 
+
 /* =========================================================
    SPOTIFY IMPORT HELPER
    ========================================================= */
 
 function setupSpotifyImport() {
+
     openSpotifyImport?.addEventListener(
         "click",
         function () {
+
             spotifyImportModal?.classList.remove(
                 "hidden"
             );
 
+
             if (spotifyImportResult) {
+
                 spotifyImportResult.textContent =
                     "";
             }
 
+
             if (spotifyPlaylistInput) {
+
                 spotifyPlaylistInput.value = "";
+
 
                 setTimeout(
                     function () {
+
                         spotifyPlaylistInput.focus();
+
                     },
                     50
                 );
@@ -2421,67 +2904,85 @@ function setupSpotifyImport() {
         }
     );
 
+
     closeSpotifyImportButton?.addEventListener(
         "click",
         closeSpotifyImportModal
     );
+
 
     cancelSpotifyImport?.addEventListener(
         "click",
         closeSpotifyImportModal
     );
 
+
     checkSpotifyPlaylistButton?.addEventListener(
         "click",
         checkSpotifyPlaylistLink
     );
 
+
     spotifyPlaylistInput?.addEventListener(
         "keydown",
         function (event) {
+
             if (
                 event.key === "Enter"
             ) {
+
                 event.preventDefault();
 
                 checkSpotifyPlaylistLink();
             }
 
+
             if (
                 event.key === "Escape"
             ) {
+
                 closeSpotifyImportModal();
             }
         }
     );
 
+
     spotifyImportModal?.addEventListener(
         "click",
         function (event) {
+
             if (
                 event.target ===
                 spotifyImportModal
             ) {
+
                 closeSpotifyImportModal();
             }
         }
     );
 }
 
+
 function closeSpotifyImportModal() {
+
     spotifyImportModal?.classList.add(
         "hidden"
     );
 }
 
+
 function checkSpotifyPlaylistLink() {
+
     const input =
         spotifyPlaylistInput
             ? spotifyPlaylistInput.value.trim()
             : "";
 
+
     if (!input) {
+
         if (spotifyImportResult) {
+
             spotifyImportResult.textContent =
                 "Paste a Spotify playlist link first.";
         }
@@ -2489,13 +2990,17 @@ function checkSpotifyPlaylistLink() {
         return;
     }
 
+
     const match =
         input.match(
             /spotify\.com\/playlist\/([a-zA-Z0-9]+)/
         );
 
+
     if (!match) {
+
         if (spotifyImportResult) {
+
             spotifyImportResult.textContent =
                 "That doesn't look like a valid Spotify playlist link.";
         }
@@ -2503,43 +3008,48 @@ function checkSpotifyPlaylistLink() {
         return;
     }
 
+
     const playlistId =
         match[1];
 
+
     if (spotifyImportResult) {
+
         spotifyImportResult.innerHTML =
-            '<strong style="color: white;">' +
+            "<strong style=\"color: white;\">" +
             "Spotify playlist detected" +
             "</strong>" +
             "<br>" +
-            '<span style="color: #707070;">' +
+            "<span style=\"color: #707070;\">" +
             "Playlist ID: " +
-            escapeHtml(
-                playlistId
-            ) +
+            escapeHtml(playlistId) +
             "</span>" +
             "<br><br>" +
-            '<span style="color: #a7a7a7;">' +
+            "<span style=\"color: #a7a7a7;\">" +
             "The Spotify link was recognized. " +
             "Actual music playback in RedWave uses YouTube." +
             "</span>";
     }
 }
 
+
 /* =========================================================
    QUEUE
    ========================================================= */
 
 function setupQueue() {
+
     queueButton?.addEventListener(
         "click",
         openQueue
     );
 
+
     closeQueueButton?.addEventListener(
         "click",
         closeQueue
     );
+
 
     queueOverlay?.addEventListener(
         "click",
@@ -2547,29 +3057,38 @@ function setupQueue() {
     );
 }
 
+
 function openQueue() {
+
     queuePanel?.classList.add(
         "visible"
     );
+
 
     queueOverlay?.classList.add(
         "visible"
     );
 
+
     updateQueueUI();
 }
 
+
 function closeQueue() {
+
     queuePanel?.classList.remove(
         "visible"
     );
+
 
     queueOverlay?.classList.remove(
         "visible"
     );
 }
 
+
 function updateQueueUI() {
+
     if (
         !queueCurrentCover ||
         !queueCurrentTitle ||
@@ -2579,65 +3098,83 @@ function updateQueueUI() {
         return;
     }
 
+
     queueCurrentCover.innerHTML =
         "<span>♫</span>";
 
+
     if (currentSong) {
+
         queueCurrentTitle.textContent =
             currentSong.title;
 
+
         queueCurrentArtist.textContent =
             currentSong.artist;
+
 
         const image =
             document.createElement(
                 "img"
             );
 
+
         image.src =
             currentSong.cover;
+
 
         image.alt =
             currentSong.title;
 
+
         image.onerror =
             function () {
+
                 image.style.display =
                     "none";
             };
 
+
         queueCurrentCover.innerHTML =
             "";
+
 
         queueCurrentCover.appendChild(
             image
         );
+
     } else {
+
         queueCurrentTitle.textContent =
             "Nothing playing";
+
 
         queueCurrentArtist.textContent =
             "RedWave";
     }
 
-    queueList.innerHTML =
-        "";
+
+    queueList.innerHTML = "";
+
 
     if (
         queue.length === 0
     ) {
+
         queueList.innerHTML =
             '<div class="empty-state" style="min-height: 150px;">' +
             '<div class="empty-icon">♫</div>' +
-            "<h3>Queue is empty</h3>" +
-            "<p>Play a song to start your queue.</p>" +
-            "</div>";
+            '<h3>Queue is empty</h3>' +
+            '<p>Play a song to start your queue.</p>' +
+            '</div>';
 
         return;
     }
 
+
     queue.forEach(
         function (song, index) {
+
             if (
                 currentSong &&
                 song.videoId ===
@@ -2646,95 +3183,119 @@ function updateQueueUI() {
                 return;
             }
 
+
             const item =
                 document.createElement(
                     "div"
                 );
 
+
             item.className =
                 "queue-item";
+
 
             const cover =
                 document.createElement(
                     "div"
                 );
 
+
             cover.className =
                 "queue-item-cover";
+
 
             const image =
                 document.createElement(
                     "img"
                 );
 
+
             image.src =
                 song.cover;
+
 
             image.alt =
                 song.title;
 
+
             cover.appendChild(
                 image
             );
+
 
             const info =
                 document.createElement(
                     "div"
                 );
 
+
             info.className =
                 "queue-item-info";
+
 
             const title =
                 document.createElement(
                     "div"
                 );
 
+
             title.className =
                 "queue-item-title";
 
+
             title.textContent =
                 song.title;
+
 
             const artist =
                 document.createElement(
                     "div"
                 );
 
+
             artist.className =
                 "queue-item-artist";
 
+
             artist.textContent =
                 song.artist;
+
 
             info.appendChild(
                 title
             );
 
+
             info.appendChild(
                 artist
             );
+
 
             item.appendChild(
                 cover
             );
 
+
             item.appendChild(
                 info
             );
 
+
             item.addEventListener(
                 "click",
                 function () {
+
                     playSong(
                         song,
                         queue,
                         index
                     );
 
+
                     closeQueue();
                 }
             );
+
 
             queueList.appendChild(
                 item
@@ -2743,55 +3304,66 @@ function updateQueueUI() {
     );
 }
 
+
 /* =========================================================
    PLAYER CONTROLS
    ========================================================= */
 
 function setupPlayerControls() {
+
     playPauseButton?.addEventListener(
         "click",
         togglePlayPause
     );
+
 
     previousButton?.addEventListener(
         "click",
         playPrevious
     );
 
+
     nextButton?.addEventListener(
         "click",
         playNext
     );
+
 
     shuffleButton?.addEventListener(
         "click",
         toggleShuffle
     );
 
+
     repeatButton?.addEventListener(
         "click",
         toggleRepeat
     );
+
 
     progressBar?.addEventListener(
         "input",
         seekPlayer
     );
 
+
     volumeSlider?.addEventListener(
         "input",
         changeVolume
     );
+
 
     volumeIcon?.addEventListener(
         "click",
         toggleMute
     );
 
+
     document.addEventListener(
         "keydown",
         handleKeyboardControls
     );
+
 
     setInterval(
         updateProgress,
@@ -2799,39 +3371,53 @@ function setupPlayerControls() {
     );
 }
 
+
 /* =========================================================
    PLAY / PAUSE
    ========================================================= */
 
 function togglePlayPause() {
+
     if (
         !youtubePlayerReady ||
         !youtubePlayer
     ) {
+
         if (currentSong) {
+
             playYouTubeVideo(
                 currentSong.videoId
             );
+
         } else {
+
             searchInput?.focus();
         }
 
         return;
     }
 
+
     try {
+
         const state =
             youtubePlayer.getPlayerState();
+
 
         if (
             state ===
             YT.PlayerState.PLAYING
         ) {
+
             youtubePlayer.pauseVideo();
+
         } else {
+
             youtubePlayer.playVideo();
         }
+
     } catch (error) {
+
         console.error(
             "RedWave: Play/pause error:",
             error
@@ -2839,11 +3425,13 @@ function togglePlayPause() {
     }
 }
 
+
 /* =========================================================
    PREVIOUS
    ========================================================= */
 
 function playPrevious() {
+
     if (
         !queue.length ||
         queueIndex < 0
@@ -2851,15 +3439,19 @@ function playPrevious() {
         return;
     }
 
+
     if (
         youtubePlayerReady &&
         youtubePlayer
     ) {
+
         try {
+
             if (
                 youtubePlayer.getCurrentTime() >
                 3
             ) {
+
                 youtubePlayer.seekTo(
                     0,
                     true
@@ -2867,27 +3459,32 @@ function playPrevious() {
 
                 return;
             }
+
         } catch (error) {
             /* Continue to previous song. */
         }
     }
 
+
     let newIndex =
         queueIndex - 1;
 
-    if (
-        newIndex < 0
-    ) {
+
+    if (newIndex < 0) {
+
         newIndex =
             queue.length - 1;
     }
 
+
     const song =
         queue[newIndex];
+
 
     if (!song) {
         return;
     }
+
 
     playSong(
         song,
@@ -2896,33 +3493,43 @@ function playPrevious() {
     );
 }
 
+
 /* =========================================================
    NEXT
    ========================================================= */
 
 function playNext() {
+
     if (
         !queue.length
     ) {
         return;
     }
 
+
     if (shuffleEnabled) {
+
         playRandomQueueSong();
 
         return;
     }
 
+
     let newIndex =
         queueIndex + 1;
+
 
     if (
         newIndex >=
         queue.length
     ) {
+
         if (repeatMode) {
+
             newIndex = 0;
+
         } else {
+
             isPlaying = false;
 
             updatePlayButton();
@@ -2931,12 +3538,15 @@ function playNext() {
         }
     }
 
+
     const song =
         queue[newIndex];
+
 
     if (!song) {
         return;
     }
+
 
     playSong(
         song,
@@ -2945,20 +3555,24 @@ function playNext() {
     );
 }
 
+
 /* =========================================================
    RANDOM
    ========================================================= */
 
 function playRandomQueueSong() {
+
     if (
         queue.length === 0
     ) {
         return;
     }
 
+
     if (
         queue.length === 1
     ) {
+
         playSong(
             queue[0],
             queue,
@@ -2968,18 +3582,23 @@ function playRandomQueueSong() {
         return;
     }
 
+
     let randomIndex;
 
+
     do {
+
         randomIndex =
             Math.floor(
                 Math.random() *
                 queue.length
             );
+
     } while (
         randomIndex ===
         queueIndex
     );
+
 
     playSong(
         queue[randomIndex],
@@ -2988,32 +3607,40 @@ function playRandomQueueSong() {
     );
 }
 
+
 /* =========================================================
    SONG ENDED
    ========================================================= */
 
 function handleSongEnded() {
+
     if (repeatMode) {
+
         if (
             youtubePlayerReady &&
             youtubePlayer
         ) {
+
             youtubePlayer.playVideo();
         }
 
         return;
     }
 
+
     playNext();
 }
+
 
 /* =========================================================
    SHUFFLE
    ========================================================= */
 
 function toggleShuffle() {
+
     shuffleEnabled =
         !shuffleEnabled;
+
 
     shuffleButton?.classList.toggle(
         "active",
@@ -3021,13 +3648,16 @@ function toggleShuffle() {
     );
 }
 
+
 /* =========================================================
    REPEAT
    ========================================================= */
 
 function toggleRepeat() {
+
     repeatMode =
         !repeatMode;
+
 
     repeatButton?.classList.toggle(
         "active",
@@ -3035,11 +3665,13 @@ function toggleRepeat() {
     );
 }
 
+
 /* =========================================================
    SEEK
    ========================================================= */
 
 function seekPlayer() {
+
     if (
         !youtubePlayerReady ||
         !youtubePlayer ||
@@ -3048,29 +3680,37 @@ function seekPlayer() {
         return;
     }
 
+
     try {
+
         const duration =
             youtubePlayer.getDuration();
+
 
         const percentage =
             Number(
                 progressBar.value
             );
 
+
         if (
             duration > 0
         ) {
+
             const targetTime =
                 duration *
                 percentage /
                 100;
+
 
             youtubePlayer.seekTo(
                 targetTime,
                 true
             );
         }
+
     } catch (error) {
+
         console.warn(
             "RedWave: Could not seek:",
             error
@@ -3078,11 +3718,13 @@ function seekPlayer() {
     }
 }
 
+
 /* =========================================================
    VOLUME
    ========================================================= */
 
 function changeVolume() {
+
     const volume =
         Number(
             volumeSlider
@@ -3090,9 +3732,11 @@ function changeVolume() {
                 : 100
         );
 
+
     updateVolumeIcon(
         volume
     );
+
 
     if (
         !youtubePlayerReady ||
@@ -3101,20 +3745,24 @@ function changeVolume() {
         return;
     }
 
+
     try {
+
         youtubePlayer.setVolume(
             volume
         );
 
-        if (
-            volume > 0
-        ) {
+
+        if (volume > 0) {
+
             previousVolume =
                 volume;
 
             youtubePlayer.unMute();
         }
+
     } catch (error) {
+
         console.warn(
             "RedWave: Could not change volume:",
             error
@@ -3122,11 +3770,13 @@ function changeVolume() {
     }
 }
 
+
 /* =========================================================
    MUTE
    ========================================================= */
 
 function toggleMute() {
+
     if (
         !youtubePlayerReady ||
         !youtubePlayer
@@ -3134,31 +3784,42 @@ function toggleMute() {
         return;
     }
 
+
     try {
+
         const muted =
             youtubePlayer.isMuted();
 
+
         if (muted) {
+
             const restoreVolume =
                 previousVolume > 0
                     ? previousVolume
                     : 100;
 
+
             youtubePlayer.unMute();
+
 
             youtubePlayer.setVolume(
                 restoreVolume
             );
 
+
             if (volumeSlider) {
+
                 volumeSlider.value =
                     restoreVolume;
             }
 
+
             updateVolumeIcon(
                 restoreVolume
             );
+
         } else {
+
             const currentVolume =
                 Number(
                     volumeSlider
@@ -3166,25 +3827,33 @@ function toggleMute() {
                         : 100
                 );
 
+
             if (
                 currentVolume > 0
             ) {
+
                 previousVolume =
                     currentVolume;
             }
 
+
             youtubePlayer.mute();
 
+
             if (volumeSlider) {
+
                 volumeSlider.value =
                     0;
             }
+
 
             updateVolumeIcon(
                 0
             );
         }
+
     } catch (error) {
+
         console.warn(
             "RedWave: Mute error:",
             error
@@ -3192,11 +3861,13 @@ function toggleMute() {
     }
 }
 
+
 /* =========================================================
    PROGRESS
    ========================================================= */
 
 function updateProgress() {
+
     if (
         !youtubePlayerReady ||
         !youtubePlayer
@@ -3204,19 +3875,25 @@ function updateProgress() {
         return;
     }
 
+
     try {
+
         const current =
             youtubePlayer.getCurrentTime();
 
+
         const duration =
             youtubePlayer.getDuration();
+
 
         if (
             Number.isFinite(current) &&
             Number.isFinite(duration) &&
             duration > 0
         ) {
+
             if (progressBar) {
+
                 progressBar.value =
                     (
                         current /
@@ -3224,42 +3901,53 @@ function updateProgress() {
                     ) * 100;
             }
 
+
             if (currentTimeElement) {
+
                 currentTimeElement.textContent =
                     formatTime(
                         current
                     );
             }
 
+
             if (durationElement) {
+
                 durationElement.textContent =
                     formatTime(
                         duration
                     );
             }
         }
+
     } catch (error) {
-        /* YouTube may temporarily reject state requests. */
+        /* YouTube player may temporarily reject state requests. */
     }
 }
 
+
 function formatTime(seconds) {
+
     if (
         !Number.isFinite(seconds) ||
         seconds < 0
     ) {
+
         return "0:00";
     }
+
 
     const minutes =
         Math.floor(
             seconds / 60
         );
 
+
     const remainingSeconds =
         Math.floor(
             seconds % 60
         );
+
 
     return (
         minutes +
@@ -3273,11 +3961,13 @@ function formatTime(seconds) {
     );
 }
 
+
 /* =========================================================
    PLAYER UI
    ========================================================= */
 
 function updatePlayerUI() {
+
     if (
         !playerTitle ||
         !playerArtist ||
@@ -3286,15 +3976,20 @@ function updatePlayerUI() {
         return;
     }
 
+
     if (!currentSong) {
+
         playerTitle.textContent =
             "Nothing playing";
+
 
         playerArtist.textContent =
             "Search for a song to begin";
 
+
         playerCover.innerHTML =
             "<span>♫</span>";
+
 
         updateQueueUI();
 
@@ -3303,39 +3998,50 @@ function updatePlayerUI() {
         return;
     }
 
+
     playerTitle.textContent =
         currentSong.title;
+
 
     playerArtist.textContent =
         currentSong.artist;
 
+
     playerCover.innerHTML =
         "";
+
 
     const image =
         document.createElement(
             "img"
         );
 
+
     image.src =
         currentSong.cover;
+
 
     image.alt =
         currentSong.title;
 
+
     playerCover.appendChild(
         image
     );
+
 
     updatePlayButton();
 
     updateQueueUI();
 }
 
+
 function updatePlayButton() {
+
     if (!playPauseButton) {
         return;
     }
+
 
     playPauseButton.textContent =
         isPlaying
@@ -3343,38 +4049,45 @@ function updatePlayButton() {
             : "▶";
 }
 
+
 /* =========================================================
    VOLUME ICON
    ========================================================= */
 
 function updateVolumeIcon(volume) {
+
     if (!volumeIcon) {
         return;
     }
 
-    if (
-        volume <= 0
-    ) {
+
+    if (volume <= 0) {
+
         volumeIcon.textContent =
             "🔇";
-    } else if (
-        volume < 45
-    ) {
+
+    } else if (volume < 45) {
+
         volumeIcon.textContent =
             "🔉";
+
     } else {
+
         volumeIcon.textContent =
             "🔊";
     }
 }
+
 
 /* =========================================================
    KEYBOARD CONTROLS
    ========================================================= */
 
 function handleKeyboardControls(event) {
+
     const tag =
         event.target?.tagName;
+
 
     if (
         tag === "INPUT" ||
@@ -3383,9 +4096,11 @@ function handleKeyboardControls(event) {
         return;
     }
 
+
     if (
         event.code === "Space"
     ) {
+
         event.preventDefault();
 
         togglePlayPause();
@@ -3393,19 +4108,24 @@ function handleKeyboardControls(event) {
         return;
     }
 
+
     if (
         event.code === "ArrowRight"
     ) {
+
         if (
             youtubePlayerReady &&
             youtubePlayer
         ) {
+
             try {
+
                 youtubePlayer.seekTo(
                     youtubePlayer.getCurrentTime() +
                     5,
                     true
                 );
+
             } catch (error) {
                 /* Ignore temporary player errors. */
             }
@@ -3414,14 +4134,18 @@ function handleKeyboardControls(event) {
         return;
     }
 
+
     if (
         event.code === "ArrowLeft"
     ) {
+
         if (
             youtubePlayerReady &&
             youtubePlayer
         ) {
+
             try {
+
                 youtubePlayer.seekTo(
                     Math.max(
                         0,
@@ -3430,6 +4154,7 @@ function handleKeyboardControls(event) {
                     ),
                     true
                 );
+
             } catch (error) {
                 /* Ignore temporary player errors. */
             }
@@ -3437,19 +4162,24 @@ function handleKeyboardControls(event) {
     }
 }
 
+
 /* =========================================================
    START LISTENING
    ========================================================= */
 
 function setupStartListening() {
+
     startListeningButton?.addEventListener(
         "click",
         function () {
+
             if (!searchInput) {
                 return;
             }
 
+
             searchInput.focus();
+
 
             searchInput.scrollIntoView({
                 behavior: "smooth",
@@ -3459,40 +4189,50 @@ function setupStartListening() {
     );
 }
 
+
 /* =========================================================
    EMPTY STATES
    ========================================================= */
 
 function hideAllEmptyStates() {
+
     noResults?.classList.add(
         "hidden"
     );
+
 
     emptyFavorites?.classList.add(
         "hidden"
     );
 
+
     emptyRecent?.classList.add(
         "hidden"
     );
+
 
     emptyPlaylist?.classList.add(
         "hidden"
     );
 }
 
+
 function resetEmptyStates() {
+
     hideAllEmptyStates();
 }
+
 
 /* =========================================================
    SEARCH UI
    ========================================================= */
 
 function updateSearchClearButton() {
+
     if (!searchWrapper) {
         return;
     }
+
 
     const hasValue =
         Boolean(
@@ -3500,26 +4240,32 @@ function updateSearchClearButton() {
             searchInput.value.trim()
         );
 
+
     searchWrapper.classList.toggle(
         "has-value",
         hasValue
     );
 }
 
+
 function showSearchStatus(message) {
+
     if (!searchStatus) {
         return;
     }
 
+
     searchStatus.textContent =
         message || "";
 }
+
 
 /* =========================================================
    ESCAPE HTML
    ========================================================= */
 
 function escapeHtml(value) {
+
     return String(value)
         .replace(
             /&/g,
@@ -3543,6 +4289,7 @@ function escapeHtml(value) {
         );
 }
 
+
 /* =========================================================
    GLOBAL ESCAPE KEY
    ========================================================= */
@@ -3550,11 +4297,13 @@ function escapeHtml(value) {
 document.addEventListener(
     "keydown",
     function (event) {
+
         if (
             event.key !== "Escape"
         ) {
             return;
         }
+
 
         closeQueue();
 
@@ -3566,6 +4315,7 @@ document.addEventListener(
     }
 );
 
+
 /* =========================================================
    DEBUG INFORMATION
    ========================================================= */
@@ -3573,3 +4323,4 @@ document.addEventListener(
 console.log(
     "RedWave script loaded."
 );
+```
