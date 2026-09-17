@@ -1,3 +1,4 @@
+```css
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 /* =========================================================
@@ -1197,6 +1198,7 @@ a {
     color: var(--muted-dark);
 
     font-size: 10px;
+
     line-height: 1.6;
 }
 
@@ -1595,58 +1597,46 @@ a {
 
 /* =========================================================
    YOUTUBE PLAYER
+   HIDDEN VISUALLY — AUDIO PLAYBACK REMAINS ACTIVE
    ========================================================= */
 
 .youtube-player-wrapper {
     position: fixed;
 
-    right: 18px;
+    left: -9999px;
+    top: -9999px;
 
-    bottom:
-        calc(
-            var(--player-height) + 15px
-        );
-
-    width: 300px;
-
-    aspect-ratio: 16 / 9;
+    width: 1px;
+    height: 1px;
 
     background: #000;
 
-    border-radius: 12px;
-
     overflow: hidden;
-
-    border: 1px solid var(--border);
-
-    box-shadow:
-        0 15px 45px
-        rgba(0, 0, 0, 0.65);
-
-    z-index: 250;
 
     opacity: 0;
 
     pointer-events: none;
 
-    transform:
-        translateY(12px)
-        scale(0.97);
+    border: 0;
 
-    transition:
-        opacity 0.25s ease,
-        transform 0.25s ease;
+    box-shadow: none;
+
+    z-index: -1;
 }
 
 
 .youtube-player-wrapper.visible {
-    opacity: 1;
+    left: -9999px;
+    top: -9999px;
 
-    pointer-events: auto;
+    width: 1px;
+    height: 1px;
 
-    transform:
-        translateY(0)
-        scale(1);
+    opacity: 0;
+
+    pointer-events: none;
+
+    transform: none;
 }
 
 
@@ -1655,16 +1645,16 @@ a {
 
     inset: 0;
 
-    width: 100%;
-    height: 100%;
+    width: 1px;
+    height: 1px;
 }
 
 
 #youtubePlayer iframe {
     display: block;
 
-    width: 100%;
-    height: 100%;
+    width: 1px;
+    height: 1px;
 
     border: 0;
 }
@@ -2412,22 +2402,6 @@ input[type="range"] {
         display: none;
     }
 
-
-    .youtube-player-wrapper {
-        right: 12px;
-
-        bottom:
-            calc(
-                var(--player-height) + 12px
-            );
-
-        width:
-            min(
-                300px,
-                calc(100vw - 24px)
-            );
-    }
-
 }
 
 
@@ -2535,3 +2509,4 @@ input[type="range"] {
     }
 
 }
+```
