@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>RedWave - Music Player</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+    <aside class="sidebar">
+
+      <div class="logo">
+        RedWave
+      </div>
+
+      <nav class="main-nav">
+
+        <button class="nav-link active" data-section="home">
+          <span>⌂</span>
+          <span>Home</span>
+        </button>
+
+        <button class="nav-link" data-section="search">
+          <span>⌕</span>
+          <span>Search</span>
+        </button>
+
+        <button class="nav-link" data-section="library">
+          <span>♫</span>
+          <span>Your Library</span>
+        </button>
+
+      </nav>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-title">
+        Your Music
+      </div>
+
+      <button class="sidebar-music-link" id="favoritesSidebarButton">
+        <span class="sidebar-icon">♥</span>
+        <span>Liked Songs</span>
+      </button>
+
+      <button class="sidebar-music-link" id="recentSidebarButton">
+        <span class="sidebar-icon">◷</span>
+        <span>Recently Played</span>
+      </button>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-playlist-heading">
+
+        <span>Playlists</span>
+
+        <button
+          class="create-playlist-small"
+          id="createPlaylistButton"
+          title="Create playlist"
+        >
+          +
+        </button>
+
+      </div>
+
+      <div
+        class="sidebar-playlists"
+        id="sidebarPlaylists"
+      ></div>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN AREA
+    ========================== -->
+    <main class="main">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+
+        <div class="search-box">
+
+          <span class="search-icon">⌕</span>
+
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Search songs, artists or albums..."
+            autocomplete="off"
+          >
+
+          <button
+            class="clear-search-button"
+            id="clearSearchButton"
+            title="Clear search"
+          >
+            ×
+          </button>
+
+        </div>
+
+        <button
+          class="queue-open-button"
+          id="queueOpenButton"
+        >
+          ☷ Queue
+        </button>
+
+      </header>
+
+
+      <!-- =========================
+           HOME / SEARCH CONTENT
+      ========================== -->
+      <section class="content">
+
+        <!-- HERO -->
+        <div class="hero">
+
+          <div class="hero-content">
+
+            <div class="hero-small">
+              YOUR MUSIC. YOUR WAY.
+            </div>
+
+            <h1>
+              Your sound.<br>
+              Your RedWave.
+            </h1>
+
+            <p>
+              Search the online music catalog and build your own playlists.
+            </p>
+
+            <button
+              class="start-button"
+              id="startButton"
+            >
+              Start Listening
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- SECTION -->
+        <section class="music-section">
+
+          <div class="section-header">
+
+            <div>
+
+              <div
+                class="section-label"
+                id="sectionLabel"
+              >
+                DISCOVER
+              </div>
+
+              <h2 id="sectionTitle">
+                Online Music
+              </h2>
+
+            </div>
+
+            <div
+              class="song-count"
+              id="songCount"
+            >
+              Search for music
+            </div>
+
+          </div>
+
+
+          <!-- Search status -->
+          <div
+            class="search-status hidden"
+            id="searchStatus"
+          ></div>
+
+
+          <!-- Music results -->
+          <div
+            class="music-grid"
+            id="musicGrid"
+          ></div>
+
+
+          <!-- Empty search -->
+          <div
+            class="no-results hidden"
+            id="noResults"
+          >
+
+            <div class="empty-icon">
+              ♪
+            </div>
+
+            <h3>
+              No music found
+            </h3>
+
+            <p>
+              Try another song, artist, album or genre.
+            </p>
+
+          </div>
+
+
+          <!-- Empty favorites -->
+          <div
+            class="empty-favorites hidden"
+            id="emptyFavorites"
+          >
+
+            <div class="empty-icon">
+              ♥
+            </div>
+
+            <h3>
+              No liked songs yet
+            </h3>
+
+            <p>
+              Search for music and press the heart button to save songs here.
+            </p>
+
+          </div>
+
+
+          <!-- Empty recently played -->
+          <div
+            class="empty-recent hidden"
+            id="emptyRecent"
+          >
+
+            <div class="empty-icon">
+              ◷
+            </div>
+
+            <h3>
+              Nothing played yet
+            </h3>
+
+            <p>
+              Songs you play will appear here.
+            </p>
+
+          </div>
+
+
+          <!-- Empty playlist -->
+          <div
+            class="empty-playlist hidden"
+            id="emptyPlaylist"
+          >
+
+            <div class="empty-icon">
+              ♫
+            </div>
+
+            <h3 id="emptyPlaylistTitle">
+              Playlist is empty
+            </h3>
+
+            <p>
+              Search for music and add songs to this playlist.
+            </p>
+
+          </div>
+
+        </section>
+
+      </section>
+
+    </main>
+
+
+    <!-- =========================
+         QUEUE
+    ========================== -->
+    <aside
+      class="queue-panel"
+      id="queuePanel"
+    >
+
+      <div class="queue-header">
+
+        <div>
+
+          <div class="queue-small">
+            UP NEXT
+          </div>
+
+          <h3>
+            Queue
+          </h3>
+
+        </div>
+
+        <button
+          class="queue-close-button"
+          id="queueCloseButton"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="queue-current">
+
+        <div
+          class="queue-current-cover"
+          id="queueCurrentCover"
+        ></div>
+
+        <div>
+
+          <div
+            class="queue-current-label"
+          >
+            NOW PLAYING
+          </div>
+
+          <strong
+            id="queueCurrentTitle"
+          >
+            Nothing playing
+          </strong>
+
+          <span
+            id="queueCurrentArtist"
+          >
+            -
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="queue-list"
+        id="queueList"
+      ></div>
+
+    </aside>
+
+
+    <div
+      class="queue-overlay"
+      id="queueOverlay"
+    ></div>
+
+
+    <!-- =========================
+         PLAYER
+    ========================== -->
+    <footer class="player">
+
+      <!-- Current song -->
+      <div class="now-playing">
+
+        <div
+          class="mini-cover"
+          id="miniCover"
+        ></div>
+
+        <div class="now-playing-text">
+
+          <h4
+            id="nowPlayingTitle"
+          >
+            Nothing playing
+          </h4>
+
+          <p
+            id="nowPlayingArtist"
+          >
+            Choose a song to start
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- Controls -->
+      <div class="player-center">
+
+        <div class="player-buttons">
+
+          <button
+            class="player-control shuffle-button"
+            id="shuffleButton"
+            title="Shuffle"
+          >
+            🔀
+          </button>
+
+          <button
+            class="player-control previous-button"
+            id="previousButton"
+            title="Previous"
+          >
+            ⏮
+          </button>
+
+          <button
+            class="play-button"
+            id="playPauseButton"
+            title="Play / Pause"
+          >
+            ▶
+          </button>
+
+          <button
+            class="player-control next-button"
+            id="nextButton"
+            title="Next"
+          >
+            ⏭
+          </button>
+
+          <button
+            class="player-control repeat-button"
+            id="repeatButton"
+            title="Repeat"
+          >
+            🔁
+          </button>
+
+        </div>
+
+
+        <div class="progress-row">
+
+          <span
+            class="time-current"
+            id="timeCurrent"
+          >
+            0:00
+          </span>
+
+          <div
+            class="progress-bar"
+            id="progressBar"
+          >
+            <div
+              class="progress-fill"
+              id="progressFill"
+            ></div>
+          </div>
+
+          <span
+            class="time-duration"
+            id="timeDuration"
+          >
+            0:00
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- Volume -->
+      <div class="player-right">
+
+        <span
+          class="volume-icon"
+          id="volumeIcon"
+        >
+          🔊
+        </span>
+
+        <input
+          type="range"
+          class="volume-slider"
+          id="volumeSlider"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0.8"
+        >
+
+      </div>
+
+    </footer>
+
+
+    <!-- =========================
+         PLAYLIST MODAL
+    ========================== -->
+    <div
+      class="modal-overlay hidden"
+      id="playlistModal"
+    >
+
+      <div class="modal">
+
+        <button
+          class="modal-close"
+          id="playlistModalClose"
+        >
+          ×
+        </button>
+
+        <div class="modal-icon">
+          ♫
+        </div>
+
+        <h2>
+          Create Playlist
+        </h2>
+
+        <p>
+          Give your new playlist a name.
+        </p>
+
+        <input
+          type="text"
+          id="playlistNameInput"
+          class="modal-input"
+          placeholder="My Playlist"
+          maxlength="50"
+        >
+
+        <div class="modal-buttons">
+
+          <button
+            class="modal-cancel"
+            id="playlistCancelButton"
+          >
+            Cancel
+          </button>
+
+          <button
+            class="modal-create"
+            id="playlistCreateButton"
+          >
+            Create
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         ADD TO PLAYLIST MODAL
+    ========================== -->
+    <div
+      class="modal-overlay hidden"
+      id="addPlaylistModal"
+    >
+
+      <div class="modal playlist-picker-modal">
+
+        <button
+          class="modal-close"
+          id="addPlaylistModalClose"
+        >
+          ×
+        </button>
+
+        <div class="modal-icon">
+          +
+        </div>
+
+        <h2>
+          Add to Playlist
+        </h2>
+
+        <p id="addPlaylistSongName">
+          Choose a playlist.
+        </p>
+
+        <div
+          class="playlist-picker"
+          id="playlistPicker"
+        ></div>
+
+        <button
+          class="modal-create-full"
+          id="createPlaylistFromPicker"
+        >
+          + Create New Playlist
+        </button>
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+  <!-- Audio element -->
+  <audio
+    id="audioPlayer"
+    preload="metadata"
+  ></audio>
+
+
+  <script src="script.js"></script>
+
+</body>
+</html>
