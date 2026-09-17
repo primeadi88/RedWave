@@ -1,4 +1,3 @@
-```javascript
 "use strict";
 
 /* =========================================================
@@ -4323,4 +4322,3 @@ document.addEventListener(
 console.log(
     "RedWave script loaded."
 );
-```
