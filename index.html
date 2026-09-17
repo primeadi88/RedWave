@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>RedWave - Music Player</title>
 
@@ -11,7 +14,10 @@
 
 <body>
 
-    <!-- ================= SIDEBAR ================= -->
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
     <aside class="sidebar">
 
         <div class="logo">
@@ -19,69 +25,122 @@
             <span>RedWave</span>
         </div>
 
+
         <nav class="main-nav">
-            <button class="nav-btn active" data-view="home">
+
+            <button
+                class="nav-btn active"
+                data-view="home"
+            >
                 <span>⌂</span>
                 <span>Home</span>
             </button>
 
-            <button class="nav-btn" data-view="search">
+
+            <button
+                class="nav-btn"
+                data-view="search"
+            >
                 <span>⌕</span>
                 <span>Search</span>
             </button>
 
-            <button class="nav-btn" data-view="library">
+
+            <button
+                class="nav-btn"
+                data-view="library"
+            >
                 <span>▣</span>
                 <span>Your Library</span>
             </button>
+
         </nav>
+
 
         <div class="sidebar-section">
 
-            <div class="sidebar-title">Your Music</div>
+            <div class="sidebar-title">
+                Your Music
+            </div>
 
-            <button class="nav-btn" data-view="favorites">
+
+            <button
+                class="nav-btn"
+                data-view="favorites"
+            >
                 <span>♥</span>
                 <span>Liked Songs</span>
             </button>
 
-            <button class="nav-btn" data-view="recent">
+
+            <button
+                class="nav-btn"
+                data-view="recent"
+            >
                 <span>◷</span>
                 <span>Recently Played</span>
             </button>
 
         </div>
 
+
         <div class="sidebar-section playlists-section">
 
             <div class="sidebar-heading-row">
-                <div class="sidebar-title">Playlists</div>
+
+                <div class="sidebar-title">
+                    Playlists
+                </div>
+
 
                 <button
                     class="small-icon-btn"
                     id="createPlaylistButton"
                     title="Create playlist"
+                    type="button"
                 >
                     +
                 </button>
+
             </div>
 
-            <div id="sidebarPlaylists" class="sidebar-playlists"></div>
+
+            <div
+                id="sidebarPlaylists"
+                class="sidebar-playlists"
+            ></div>
 
         </div>
+
 
         <div class="sidebar-bottom">
 
             <div class="spotify-import-mini">
 
-                <div class="import-icon">♫</div>
-
-                <div class="import-text">
-                    <strong>Spotify Playlist</strong>
-                    <span>Paste a playlist link</span>
+                <div class="import-icon">
+                    ♫
                 </div>
 
-                <button id="openSpotifyImport" class="import-button">
+
+                <div class="import-text">
+
+                    <strong>
+                        Spotify Playlist
+                    </strong>
+
+                    <span>
+                        Paste a playlist link
+                    </span>
+
+                </div>
+
+
+                <button
+                    id="openSpotifyImport"
+                    class="import-button"
+                    type="button"
+                    title="Import Spotify playlist"
+                >
                     +
                 </button>
 
@@ -92,15 +151,23 @@
     </aside>
 
 
-    <!-- ================= MAIN ================= -->
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
 
     <main class="main-content">
+
+        <!-- TOP BAR -->
 
         <header class="topbar">
 
             <div class="search-wrapper">
 
-                <span class="search-icon">⌕</span>
+                <span class="search-icon">
+                    ⌕
+                </span>
+
 
                 <input
                     type="text"
@@ -110,86 +177,148 @@
                     autocomplete="off"
                 >
 
+
                 <button
                     id="clearSearchButton"
                     class="clear-search"
                     title="Clear search"
+                    type="button"
                 >
                     ×
                 </button>
 
             </div>
 
-            <button id="queueButton" class="queue-button">
+
+            <button
+                id="queueButton"
+                class="queue-button"
+                type="button"
+            >
                 Queue
             </button>
 
         </header>
 
 
-        <!-- ================= HERO ================= -->
 
-        <section class="hero" id="homeHero">
+        <!-- =================================================
+             HERO
+             ================================================= -->
+
+        <section
+            class="hero"
+            id="homeHero"
+        >
 
             <div class="hero-content">
 
-                <span class="hero-small">WELCOME TO</span>
+                <span class="hero-small">
+                    WELCOME TO
+                </span>
 
-                <h1>RedWave</h1>
+
+                <h1>
+                    RedWave
+                </h1>
+
 
                 <p>
                     Search millions of songs and start listening instantly.
                 </p>
 
-                <button id="startListeningButton" class="primary-button">
+
+                <button
+                    id="startListeningButton"
+                    class="primary-button"
+                    type="button"
+                >
                     Start Listening
                 </button>
 
             </div>
 
+
             <div class="hero-decoration">
+
                 <div class="wave wave-one"></div>
                 <div class="wave wave-two"></div>
                 <div class="wave wave-three"></div>
+
             </div>
 
         </section>
 
 
-        <!-- ================= MUSIC SECTION ================= -->
+
+        <!-- =================================================
+             MUSIC SECTION
+             ================================================= -->
 
         <section class="music-section">
 
             <div class="section-header">
 
                 <div>
-                    <div id="sectionLabel" class="section-label">
+
+                    <div
+                        id="sectionLabel"
+                        class="section-label"
+                    >
                         RedWave
                     </div>
+
 
                     <h2 id="sectionTitle">
                         Start listening
                     </h2>
+
                 </div>
 
-                <div id="songCount" class="song-count"></div>
+
+                <div
+                    id="songCount"
+                    class="song-count"
+                ></div>
 
             </div>
 
 
-            <div id="searchStatus" class="search-status"></div>
+            <!-- SEARCH STATUS -->
+
+            <div
+                id="searchStatus"
+                class="search-status"
+            ></div>
 
 
-            <div id="musicGrid" class="music-grid"></div>
+            <!-- SONG GRID -->
+
+            <div
+                id="musicGrid"
+                class="music-grid"
+            ></div>
 
 
-            <!-- NO RESULTS -->
 
-            <div id="noResults" class="empty-state hidden">
+            <!-- =================================================
+                 NO RESULTS
+                 ================================================= -->
 
-                <div class="empty-icon">⌕</div>
+            <div
+                id="noResults"
+                class="empty-state hidden"
+            >
 
-                <h3>No results found</h3>
+                <div class="empty-icon">
+                    ⌕
+                </div>
+
+
+                <h3>
+                    No results found
+                </h3>
+
 
                 <p>
                     Try searching for another song, artist or album.
@@ -198,13 +327,25 @@
             </div>
 
 
-            <!-- EMPTY FAVORITES -->
 
-            <div id="emptyFavorites" class="empty-state hidden">
+            <!-- =================================================
+                 EMPTY FAVORITES
+                 ================================================= -->
 
-                <div class="empty-icon">♥</div>
+            <div
+                id="emptyFavorites"
+                class="empty-state hidden"
+            >
 
-                <h3>Your liked songs are empty</h3>
+                <div class="empty-icon">
+                    ♥
+                </div>
+
+
+                <h3>
+                    Your liked songs are empty
+                </h3>
+
 
                 <p>
                     Like songs while browsing YouTube to find them here.
@@ -213,13 +354,25 @@
             </div>
 
 
-            <!-- EMPTY RECENT -->
 
-            <div id="emptyRecent" class="empty-state hidden">
+            <!-- =================================================
+                 EMPTY RECENT
+                 ================================================= -->
 
-                <div class="empty-icon">◷</div>
+            <div
+                id="emptyRecent"
+                class="empty-state hidden"
+            >
 
-                <h3>No recently played songs</h3>
+                <div class="empty-icon">
+                    ◷
+                </div>
+
+
+                <h3>
+                    No recently played songs
+                </h3>
+
 
                 <p>
                     Songs you play will appear here.
@@ -228,13 +381,25 @@
             </div>
 
 
-            <!-- EMPTY PLAYLIST -->
 
-            <div id="emptyPlaylist" class="empty-state hidden">
+            <!-- =================================================
+                 EMPTY PLAYLIST
+                 ================================================= -->
 
-                <div class="empty-icon">♫</div>
+            <div
+                id="emptyPlaylist"
+                class="empty-state hidden"
+            >
 
-                <h3>This playlist is empty</h3>
+                <div class="empty-icon">
+                    ♫
+                </div>
+
+
+                <h3>
+                    This playlist is empty
+                </h3>
+
 
                 <p>
                     Add songs to this playlist while browsing.
@@ -244,47 +409,137 @@
 
         </section>
 
+
+
+        <!-- =================================================
+             CREATOR / INFO
+             ================================================= -->
+
+        <div class="redwave-info">
+
+            <div class="redwave-info-main">
+
+                <div class="redwave-info-title">
+                    Made with
+                    <span>♥</span>
+                    by Aditya
+                    <span>(PrimeAdi / Nova)</span>
+                </div>
+
+
+                <div class="redwave-info-subtitle">
+                    RedWave · Personal Music Experience · India
+                </div>
+
+            </div>
+
+
+            <a
+                class="redwave-contact"
+                href="mailto:novapn66@gmail.com"
+            >
+                ✉
+                <span>novapn66@gmail.com</span>
+            </a>
+
+        </div>
+
     </main>
 
 
-    <!-- ================= QUEUE ================= -->
 
-    <div id="queueOverlay" class="queue-overlay"></div>
+    <!-- =====================================================
+         QUEUE OVERLAY
+         ===================================================== -->
 
-    <aside id="queuePanel" class="queue-panel">
+    <div
+        id="queueOverlay"
+        class="queue-overlay"
+    ></div>
+
+
+
+    <!-- =====================================================
+         QUEUE PANEL
+         ===================================================== -->
+
+    <aside
+        id="queuePanel"
+        class="queue-panel"
+    >
 
         <div class="queue-header">
 
             <div>
-                <span class="queue-small">PLAYING NEXT</span>
-                <h2>Queue</h2>
+
+                <span class="queue-small">
+                    PLAYING NEXT
+                </span>
+
+
+                <h2>
+                    Queue
+                </h2>
+
             </div>
 
-            <button id="closeQueueButton" class="close-button">
+
+            <button
+                id="closeQueueButton"
+                class="close-button"
+                type="button"
+                title="Close queue"
+            >
                 ×
             </button>
 
         </div>
 
+
+
+        <!-- CURRENT QUEUE SONG -->
+
         <div class="queue-current">
 
-            <div id="queueCurrentCover" class="queue-current-cover">
+            <div
+                id="queueCurrentCover"
+                class="queue-current-cover"
+            >
                 <span>♫</span>
             </div>
 
+
             <div class="queue-current-info">
-                <strong id="queueCurrentTitle">Nothing playing</strong>
-                <span id="queueCurrentArtist">RedWave</span>
+
+                <strong id="queueCurrentTitle">
+                    Nothing playing
+                </strong>
+
+
+                <span id="queueCurrentArtist">
+                    RedWave
+                </span>
+
             </div>
 
         </div>
 
-        <div id="queueList" class="queue-list"></div>
+
+
+        <!-- QUEUE LIST -->
+
+        <div
+            id="queueList"
+            class="queue-list"
+        ></div>
 
     </aside>
 
 
-    <!-- ================= YOUTUBE PLAYER ================= -->
+
+    <!-- =====================================================
+         YOUTUBE PLAYER
+         ===================================================== -->
 
     <div class="youtube-player-wrapper">
 
@@ -293,23 +548,39 @@
     </div>
 
 
-    <!-- ================= BOTTOM PLAYER ================= -->
+
+    <!-- =====================================================
+         BOTTOM PLAYER
+         ===================================================== -->
 
     <footer class="player">
 
+        <!-- NOW PLAYING -->
+
         <div class="now-playing">
 
-            <div id="playerCover" class="player-cover">
+            <div
+                id="playerCover"
+                class="player-cover"
+            >
                 <span>♫</span>
             </div>
 
+
             <div class="now-playing-info">
 
-                <div id="playerTitle" class="player-title">
+                <div
+                    id="playerTitle"
+                    class="player-title"
+                >
                     Nothing playing
                 </div>
 
-                <div id="playerArtist" class="player-artist">
+
+                <div
+                    id="playerArtist"
+                    class="player-artist"
+                >
                     Search for a song to begin
                 </div>
 
@@ -317,6 +588,9 @@
 
         </div>
 
+
+
+        <!-- PLAYER CONTROLS -->
 
         <div class="player-center">
 
@@ -326,38 +600,47 @@
                     id="shuffleButton"
                     class="control-button"
                     title="Shuffle"
+                    type="button"
                 >
                     ⇄
                 </button>
+
 
                 <button
                     id="previousButton"
                     class="control-button"
                     title="Previous"
+                    type="button"
                 >
                     |◀
                 </button>
+
 
                 <button
                     id="playPauseButton"
                     class="play-button"
                     title="Play / Pause"
+                    type="button"
                 >
                     ▶
                 </button>
+
 
                 <button
                     id="nextButton"
                     class="control-button"
                     title="Next"
+                    type="button"
                 >
                     ▶|
                 </button>
+
 
                 <button
                     id="repeatButton"
                     class="control-button"
                     title="Repeat"
+                    type="button"
                 >
                     ↻
                 </button>
@@ -365,9 +648,15 @@
             </div>
 
 
+
+            <!-- PROGRESS -->
+
             <div class="progress-area">
 
-                <span id="currentTime">0:00</span>
+                <span id="currentTime">
+                    0:00
+                </span>
+
 
                 <input
                     type="range"
@@ -378,16 +667,25 @@
                     step="0.1"
                 >
 
-                <span id="duration">0:00</span>
+
+                <span id="duration">
+                    0:00
+                </span>
 
             </div>
 
         </div>
 
 
+
+        <!-- VOLUME -->
+
         <div class="player-volume">
 
-            <span id="volumeIcon">🔊</span>
+            <span id="volumeIcon">
+                🔊
+            </span>
+
 
             <input
                 type="range"
@@ -402,21 +700,36 @@
     </footer>
 
 
-    <!-- ================= CREATE PLAYLIST MODAL ================= -->
 
-    <div id="playlistModal" class="modal-overlay hidden">
+    <!-- =====================================================
+         CREATE PLAYLIST MODAL
+         ===================================================== -->
+
+    <div
+        id="playlistModal"
+        class="modal-overlay hidden"
+    >
 
         <div class="modal">
 
             <div class="modal-header">
 
-                <h2>Create playlist</h2>
+                <h2>
+                    Create playlist
+                </h2>
 
-                <button id="closePlaylistModal" class="close-button">
+
+                <button
+                    id="closePlaylistModal"
+                    class="close-button"
+                    type="button"
+                    title="Close"
+                >
                     ×
                 </button>
 
             </div>
+
 
             <input
                 id="playlistNameInput"
@@ -424,20 +737,25 @@
                 type="text"
                 maxlength="50"
                 placeholder="Playlist name"
+                autocomplete="off"
             >
+
 
             <div class="modal-actions">
 
                 <button
                     id="cancelPlaylistButton"
                     class="secondary-button"
+                    type="button"
                 >
                     Cancel
                 </button>
 
+
                 <button
                     id="savePlaylistButton"
                     class="primary-button"
+                    type="button"
                 >
                     Create
                 </button>
@@ -449,76 +767,131 @@
     </div>
 
 
-    <!-- ================= ADD TO PLAYLIST MODAL ================= -->
 
-    <div id="addPlaylistModal" class="modal-overlay hidden">
+    <!-- =====================================================
+         ADD TO PLAYLIST MODAL
+         ===================================================== -->
+
+    <div
+        id="addPlaylistModal"
+        class="modal-overlay hidden"
+    >
 
         <div class="modal">
 
             <div class="modal-header">
 
                 <div>
-                    <span class="modal-small">ADD SONG TO</span>
-                    <h2>Playlist</h2>
+
+                    <span class="modal-small">
+                        ADD SONG TO
+                    </span>
+
+
+                    <h2>
+                        Playlist
+                    </h2>
+
                 </div>
 
-                <button id="closeAddPlaylistModal" class="close-button">
+
+                <button
+                    id="closeAddPlaylistModal"
+                    class="close-button"
+                    type="button"
+                    title="Close"
+                >
                     ×
                 </button>
 
             </div>
 
-            <div id="playlistPicker" class="playlist-picker"></div>
+
+            <div
+                id="playlistPicker"
+                class="playlist-picker"
+            ></div>
 
         </div>
 
     </div>
 
 
-    <!-- ================= SPOTIFY IMPORT MODAL ================= -->
 
-    <div id="spotifyImportModal" class="modal-overlay hidden">
+    <!-- =====================================================
+         SPOTIFY IMPORT MODAL
+         ===================================================== -->
+
+    <div
+        id="spotifyImportModal"
+        class="modal-overlay hidden"
+    >
 
         <div class="modal spotify-modal">
 
             <div class="modal-header">
 
                 <div>
-                    <span class="modal-small">IMPORT</span>
-                    <h2>Spotify Playlist</h2>
+
+                    <span class="modal-small">
+                        IMPORT
+                    </span>
+
+
+                    <h2>
+                        Spotify Playlist
+                    </h2>
+
                 </div>
 
-                <button id="closeSpotifyImport" class="close-button">
+
+                <button
+                    id="closeSpotifyImport"
+                    class="close-button"
+                    type="button"
+                    title="Close"
+                >
                     ×
                 </button>
 
             </div>
 
+
             <p class="modal-description">
                 Paste a Spotify playlist link below.
             </p>
+
 
             <input
                 id="spotifyPlaylistInput"
                 class="modal-input"
                 type="text"
                 placeholder="https://open.spotify.com/playlist/..."
+                autocomplete="off"
             >
 
-            <div id="spotifyImportResult" class="spotify-import-result"></div>
+
+            <div
+                id="spotifyImportResult"
+                class="spotify-import-result"
+            ></div>
+
 
             <div class="modal-actions">
 
                 <button
                     id="cancelSpotifyImport"
                     class="secondary-button"
+                    type="button"
                 >
                     Close
                 </button>
 
+
                 <button
                     id="checkSpotifyPlaylist"
                     class="primary-button"
+                    type="button"
                 >
                     Check Link
                 </button>
@@ -530,11 +903,19 @@
     </div>
 
 
-    <!-- ================= YOUTUBE API ================= -->
 
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- =====================================================
+         YOUTUBE IFRAME PLAYER API
+         ===================================================== -->
 
-    <!-- ================= REDWAVE JS ================= -->
+    <script
+        src="https://www.youtube.com/iframe_api"
+    ></script>
+
+
+    <!-- =====================================================
+         REDWAVE JAVASCRIPT
+         ===================================================== -->
 
     <script src="script.js"></script>
 
